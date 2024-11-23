@@ -8,7 +8,7 @@ database:"BookStore"
 })
 
 conn.connect()
-.then(()=>console.log("Connected"))
-.catch(err=>console.error("Got an error while connecting:", err.stack))
+.then(()=>console.log("Connected to the database"))
+.catch(err=>console.error("An error while connecting with the database", err.stack))
 
 module.exports=Client;
