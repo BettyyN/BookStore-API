@@ -16,76 +16,97 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify(result.rows));
       }
     });
-  } else if (urlParts[1] === "books" && req.method === "POST") {
+  } 
+  
+  else if (urlParts[1] === "books" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
     });
 
     req.on("end", () => {
-      const { title, author, isbn, publishedYear } = JSON.parse(body);
+      try {
+        const { title, author, isbn, publishedYear } = JSON.parse(body);
 
-      if (!title || !author || !isbn || !publishedYear) {
-        res.statusCode = 400;
-        res.end(
-          "All fields (Title, Author, ISBN, PublishedYear) are required."
-        );
-        return;
-      }
-
-      const insert =
-        "INSERT INTO Books (Title, Author, ISBN, PublishedYear) VALUES ($1, $2, $3, $4)";
-      const values = [title, author, isbn, publishedYear];
-
-      conn.query(insert, values, (err, result) => {
-        if (err) {
-          console.error("Error inserting data", err);
-          res.statusCode = 500;
-          res.end("Failed to insert book");
-        } else {
-          res.writeHead(201, { "Content-Type": "application/json" });
-          res.end("Book inserted successfully");
+        if (!title || !author || !isbn || !publishedYear) {
+          res.statusCode = 400;
+          res.end(
+            "All fields (Title, Author, ISBN, PublishedYear) are required."
+          );
+          return;
         }
-      });
+
+        const insert = `
+                INSERT INTO "Books" ("Title", "Author", "ISBN", "PublishedYear")
+                VALUES ($1, $2, $3, $4)
+            `;
+        const values = [title, author, isbn, publishedYear];
+
+        conn.query(insert, values, (err, result) => {
+          if (err) {
+            console.error("Error inserting data", err);
+            res.statusCode = 500;
+            res.end("Failed to insert book");
+          } else {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Book inserted successfully" }));
+          }
+        });
+      } catch (err) {
+        console.error("Invalid JSON body:", err);
+        res.statusCode = 400;
+        res.end("Invalid JSON format");
+      }
     });
-  } else if (urlParts[1] === "books" && req.method === "PUT" && urlParts[2]) {
+  } 
+  
+  else if (urlParts[1] === "books" && req.method === "PUT" && urlParts[2]) {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
     });
 
     req.on("end", () => {
-      const { title, author, isbn, publishedYear } = JSON.parse(body);
+      try {
+        const { title, author, isbn, publishedYear } = JSON.parse(body);
 
-      if (!title || !author || !isbn || !publishedYear) {
-        res.statusCode = 400;
-        res.end(
-          "All fields (Title, Author, ISBN, PublishedYear) are required."
-        );
-        return;
-      }
-
-      const update =
-        'UPDATE "Books" SET Title=$1, Author=$2, ISBN=$3, PublishedYear=$4 WHERE id=$5';
-      const values = [title, author, isbn, publishedYear, urlParts[2]];
-
-      conn.query(update, values, (err, result) => {
-        if (err) {
-          console.error("Error updating data", err);
-          res.statusCode = 500;
-          res.end("Failed to update book");
-        } else {
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end("Book updated successfully");
+        if (!title || !author || !isbn || !publishedYear) {
+          res.statusCode = 400;
+          res.end(
+            "All fields (Title, Author, ISBN, PublishedYear) are required."
+          );
+          return;
         }
-      });
+
+        const update = `
+        UPDATE "Books"
+        SET "Title" = $1, "Author" = $2, "ISBN" = $3, "PublishedYear" = $4
+        WHERE "Id" = $5
+      `;
+        const values = [title, author, isbn, publishedYear, urlParts[2]];
+
+        conn.query(update, values, (err, result) => {
+          if (err) {
+            console.error("Error updating data", err);
+            res.statusCode = 500;
+            res.end("Failed to update book");
+          } else {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end("Book updated successfully");
+          }
+        });
+      } catch (err) {
+        console.error("Invalid JSON body:", err);
+        res.statusCode = 400;
+        res.end("Invalid JSON format");
+      }
     });
   } else if (
     urlParts[1] === "books" &&
     req.method === "DELETE" &&
     urlParts[2]
   ) {
-    const deleteQuery = 'DELETE FROM "Books" WHERE id=$1';
+    const deleteQuery = 'DELETE FROM "Books" WHERE "Id" = $1';
     const values = [urlParts[2]];
 
     conn.query(deleteQuery, values, (err, result) => {
