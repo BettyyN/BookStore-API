@@ -1,11 +1,34 @@
 const http = require("http");
-const conn = require("./db");
+const conn = require("../db");
 const PORT = 8080;
 
 const server = http.createServer((req, res) => {
   const urlParts = req.url.split("/");
 
-  if (urlParts[1] === "books" && req.method === "GET") {
+ 
+   if (
+    urlParts[1] === "books" &&
+    urlParts[2] === "recommendations" &&
+    req.method === "GET"
+  ) {
+    const recommendationQuery = 'SELECT * FROM "Books" WHERE "Id" = $1';
+    const values=[1];
+    conn.query(recommendationQuery, values, (err, result) => {
+      if (err) {
+        console.error("Error fetching recommendation", err);
+        res.statusCode = 500;
+        res.end("Failed to fetch recommendation");
+      } else {
+        if (result.rows.length > 0) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify(result.rows[0]));
+        } else {
+          res.statusCode = 404;
+          res.end("No book found with Id = 1");
+        }
+      }
+    });}
+ else if (urlParts[1] === "books" && req.method === "GET") {
     conn.query('SELECT * FROM "Books"', (err, result) => {
       if (err) {
         console.error("Error executing query", err);
@@ -16,8 +39,8 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify(result.rows));
       }
     });
-  } 
-  
+  }
+
   else if (urlParts[1] === "books" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
@@ -58,9 +81,7 @@ const server = http.createServer((req, res) => {
         res.end("Invalid JSON format");
       }
     });
-  } 
-  
-  else if (urlParts[1] === "books" && req.method === "PUT" && urlParts[2]) {
+  } else if (urlParts[1] === "books" && req.method === "PUT" && urlParts[2]) {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
