@@ -2,14 +2,24 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.js",
+      "src": "index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "api/index.js"
+      "src": "/books/recommendations",
+      "dest": "/index.js"
+    },
+    {
+      "src": "/books",
+      "methods": ["GET", "POST"],
+      "dest": "/index.js"
+    },
+    {
+      "src": "/books/(?<id>[^/]+)",
+      "methods": ["PUT", "DELETE"],
+      "dest": "/index.js"
     }
   ]
 }

@@ -1,5 +1,5 @@
 const http = require("http");
-const conn = require("../db");
+const conn = require("./db");
 const PORT = 8080;
 
 const server = http.createServer((req, res) => {
